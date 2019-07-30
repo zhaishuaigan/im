@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdn.bootcss.com/axios/0.19.0-beta.1/axios.min.js"></script>
+</head>
+<body>
+
+<div class="page" id="app">
+
+</div>
+<script>
+
+    var vm = new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                ws: null,
+                messageList: [],
+                user: {
+                    name: ''
+                }
+            };
+        },
+        created: function () {
+            axios.get('/config.php')
+                .then((res) => {
+                    var config = res.data;
+                    this.ws = new WebSocket(config.ws);
+                    this.ws.onopen = this.onopen;
+                    this.ws.onmessage = this.onmessage;
+                    this.ws.onclose = this.onclose;
+                })
+        },
+        methods: {
+            onopen: function () {
+                this.ws.send("1");
+            },
+            onmessage: function (evt) {
+                console.log('收到数据:', evt.data);
+                var req = parseInt(evt.data)
+                setTimeout(() => {
+                    this.ws.send(req + 1);
+                }, 1000)
+            },
+            onclose: function () {
+                // 关闭 websocket
+                console.log('连接已关闭...');
+            },
+        }
+    });
+</script>
+</body>
+</html>
